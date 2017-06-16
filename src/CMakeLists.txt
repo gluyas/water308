@@ -18,7 +18,7 @@ SET(headers
 SET(sources
 		"main.cpp"
 		"geometry.cpp"
-)
+		water.cpp water.h)
 
 # Add executable target and link libraries
 # You do not need to touch this

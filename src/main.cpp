@@ -24,6 +24,7 @@
 #include "simple_shader.hpp"
 #include "opengl.hpp"
 #include "geometry.hpp"
+#include "water.h"
 
 using namespace std;
 using namespace cgra;
@@ -74,6 +75,8 @@ GLuint g_teapot_tex;
 
 Geometry *g_bunny;
 GLuint g_bunny_tex;
+
+Water *g_water;
 
 // Mouse Button callback
 // Called for mouse movement event on since the last glfwPollEvents
@@ -176,24 +179,24 @@ void initTexture(const char *path, GLuint *binding) {
 
 
 void initModels() {
-    initTexture("/res/textures/wood.jpg", &g_table_tex);
-    g_table = new Geometry("work/res/assets/table.obj");
+    initTexture("./res/textures/wood.jpg", &g_table_tex);
+    g_table = new Geometry("./res/assets/table.obj");
     //g_table->m_position = vec3(-5, 0, -5);
 
-    g_sphere = new Geometry("work/res/assets/sphere.obj");
+    g_sphere = new Geometry("./res/assets/sphere.obj");
     g_sphere->m_position = vec3(5, 2, 5);
 
-    g_torus = new Geometry("work/res/assets/torus.obj");
+    g_torus = new Geometry("./res/assets/torus.obj");
     g_torus->m_position = vec3(-5, 1, 5);
 
-    initTexture("/res/textures/brick.jpg", &g_cube_tex);
-    g_cube = new Geometry("work/res/assets/box.obj");
+    initTexture("./res/textures/brick.jpg", &g_cube_tex);
+    g_cube = new Geometry("./res/assets/box.obj");
     g_cube->m_position = vec3(-5, 2.5, -5);
 
-    g_teapot = new Geometry("work/res/assets/teapot.obj");
+    g_teapot = new Geometry("./res/assets/teapot.obj");
     g_teapot->m_position = vec3(5, 0.25, -5);
 
-    g_bunny = new Geometry("work/res/assets/bunny.obj");
+    g_bunny = new Geometry("./res/assets/bunny.obj");
     g_bunny->m_position = vec3(0, 0.35, 0);
 }
 
@@ -204,7 +207,7 @@ void initShader() {
 	// To create a shader program we use a helper function
 	// We pass it an array of the types of shaders we want to compile
 	// and the corrosponding locations for the files of each stage
-	g_shader = makeShaderProgramFromFile({GL_VERTEX_SHADER, GL_FRAGMENT_SHADER }, { "/res/shaders/shaderDemo.vert", "/res/shaders/shaderDemo.frag" });
+	g_shader = makeShaderProgramFromFile({GL_VERTEX_SHADER, GL_FRAGMENT_SHADER }, { "./res/shaders/shaderDemo.vert", "./res/shaders/shaderDemo.frag" });
 }
 
 
@@ -289,6 +292,8 @@ void setupCamera(int width, int height) {
 }
 
 
+void renderGeometry();
+
 // Draw function
 //
 void render(int width, int height) {
@@ -328,6 +333,17 @@ void render(int width, int height) {
         glUniform1i(glGetUniformLocation(g_shader, "texture0"), 0);
     }
 
+    renderGeometry();
+    g_water->render();
+
+    // Disable flags for cleanup (optional)
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_NORMALIZE);
+}
+
+void renderGeometry() {
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
@@ -420,23 +436,18 @@ void render(int width, int height) {
     // torus
     g_torus->renderGeometry();
 
-
     if (g_useShader) {
         // Unbind our shader
         glUseProgram(0);
     }
-
-	// Disable flags for cleanup (optional)
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_NORMALIZE);
 }
 
 
 // Forward decleration for cleanliness (Ignore)
 void APIENTRY debugCallbackARB(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar*, GLvoid*);
 
+
+void initWater();
 
 //Main program
 // 
@@ -511,6 +522,7 @@ int main(int argc, char **argv) {
 	// ...
 	initLight();
     initModels();
+    initWater();
 	initShader();
 
 
@@ -532,6 +544,15 @@ int main(int argc, char **argv) {
 	}
 
 	glfwTerminate();
+}
+
+void initWater() {
+    vec3 points[4];
+    points[0] = vec3(15, 3, 15);
+    points[1] = vec3(-15, 3, 15);
+    points[2] = vec3(-15, 3, -15);
+    points[3] = vec3(15, 3, -15);
+    g_water = new Water(points, 4, GL_TRIANGLE_FAN);
 }
 
 
