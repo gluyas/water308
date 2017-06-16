@@ -176,7 +176,7 @@ void initTexture(const char *path, GLuint *binding) {
 
 
 void initModels() {
-    initTexture("./work/res/textures/wood.jpg", &g_table_tex);
+    initTexture("/res/textures/wood.jpg", &g_table_tex);
     g_table = new Geometry("work/res/assets/table.obj");
     //g_table->m_position = vec3(-5, 0, -5);
 
@@ -186,7 +186,7 @@ void initModels() {
     g_torus = new Geometry("work/res/assets/torus.obj");
     g_torus->m_position = vec3(-5, 1, 5);
 
-    initTexture("./work/res/textures/brick.jpg", &g_cube_tex);
+    initTexture("/res/textures/brick.jpg", &g_cube_tex);
     g_cube = new Geometry("work/res/assets/box.obj");
     g_cube->m_position = vec3(-5, 2.5, -5);
 
@@ -204,7 +204,7 @@ void initShader() {
 	// To create a shader program we use a helper function
 	// We pass it an array of the types of shaders we want to compile
 	// and the corrosponding locations for the files of each stage
-	g_shader = makeShaderProgramFromFile({GL_VERTEX_SHADER, GL_FRAGMENT_SHADER }, { "./work/res/shaders/shaderDemo.vert", "./work/res/shaders/shaderDemo.frag" });
+	g_shader = makeShaderProgramFromFile({GL_VERTEX_SHADER, GL_FRAGMENT_SHADER }, { "/res/shaders/shaderDemo.vert", "/res/shaders/shaderDemo.frag" });
 }
 
 
