@@ -86,13 +86,43 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RG, W_RES, W_RES, 0, GL_RG, GL_FLOAT, gradientMap);
         //gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RG32F, W_RES, W_RES, 0, GL_UNSIGNED_BYTE, gradientMap);
 
+        // BASE, INITIAL HEIGHT SAMPLING
+
+        vec2 corner = vec2(a.x, a.y);
+        vec2 unitX = vec2((b.x - a.x)/W_RES, 0);
+        vec2 unitY = vec2(0, (b.y - a.y)/W_RES);
+        for (int x = 0; x < W_RES; x++) {
+            for (int y = 0; y < W_RES; y++) {
+                base[x][y] = 5-5.0f*((x + y) - W_RES)/W_RES;
+                // corner + unitX * x + unitY * y
+                heightPrev[x][y] = height;
+                heightCurrent[x][y] = height;
+            }
+        }
+
+
         // TRIDIAGONAL MATRIX
 
         float mat[W_RES][W_RES];
-        for (int i = 1; i < W_RES - 1; i++) {
-            mat[i][i] = e(i);
-            mat[i-1][i] = f(i);
-            mat[i][i-1] = f(i);
+        for (int i = 0; i <= 1; i++) {
+            sliceView = (SliceView) i;  // alternate rows and columns
+            for (unsigned int j = 0; j < W_RES; j++) {
+                currentSlice = j;
+
+                mat[0][0] = e0();
+
+                for (int k = 1; k < W_RES-1; k++) {
+                    mat[k][k]     = e(k);
+                    mat[k - 1][k] = f(k-1);
+                    mat[k][k - 1] = mat[k - 1][k];
+                }
+
+                mat[W_RES-2][W_RES-1] = f(W_RES-2);
+                mat[W_RES-1][W_RES-2] = mat[W_RES-2][W_RES-1];
+                mat[W_RES-1][W_RES-1] = eN();
+
+                mats[currentSlice][sliceView] = arma::fmat::fixed<W_RES, W_RES>((const float*) mat);
+            }
         }
     }
 
@@ -117,6 +147,7 @@ public:
     }
 
 private:
+    // RENDERING
     GLuint vertArray;
     GLuint vertBuffer;
 
@@ -128,34 +159,63 @@ private:
     GLuint gradientTex;
     vec2 gradientMap[W_RES][W_RES];
 
-    arma::sp_fmat tridiag{W_RES, W_RES};
-    float dX;
-    bool 
+    // SIMULATION
+    // using armadillo for large matrix multiplication
+    arma::fmat mats[W_RES][2];
 
-    // depth function
+
+    float base[W_RES][W_RES];
+    float heightCurrent[W_RES][W_RES];
+    float heightPrev[W_RES][W_RES];
+    float heightNext[W_RES][W_RES];
+
+    float unitLength;
+
+    // state variables to simplify method signatures
+    unsigned int currentSlice;
+    enum SliceView : char {x = 0, z = 1};
+    SliceView sliceView = x;
+
+    // depth of water
     float d(int i) {
+        return h(i) - b(i);
+    }
 
+    // height of water
+    float h(int i) {
+        if (sliceView == x) {
+            return heightCurrent[i][currentSlice];
+        } else {
+            return heightCurrent[currentSlice][i];
+        }
+    }
+
+    // base function
+    float b(int i) {
+        if (sliceView == x) {
+            return base[i][currentSlice];
+        } else {
+            return base[currentSlice][i];
+        }
     }
 
     // matrix building functions
 
     float e0() {
-        return 1 + W_G * W_DT * W_DT * (d(0) + d(1)) / (2 * dX * dX);
+        return 1 + W_G * W_DT * W_DT * (d(0) + d(1)) / (2 * unitLength * unitLength);
     }
 
     float eN() {
-        return 1 + W_G * W_DT * W_DT * (d(W_RES - 2) + d(W_RES - 1)) / (2 * dX * dX);
+        return 1 + W_G * W_DT * W_DT * (d(W_RES - 2) + d(W_RES - 1)) / (2 * unitLength * unitLength);
     }
 
     float e(int i) {
-        return 1 + W_G * W_DT * W_DT * (d(i-1) + 2*d(i) + d(i+1)) / (2 * dX * dX);
+        return 1 + W_G * W_DT * W_DT * (d(i-1) + 2*d(i) + d(i+1)) / (2 * unitLength * unitLength);
     }
 
     float f(int i) {
-        return - W_G * W_DT * W_DT * (d(i) + d(i+1)) / (2 * dX * dX);
+        return - W_G * W_DT * W_DT * (d(i) + d(i+1)) / (2 * unitLength * unitLength);
     }
-
-
 };
 
 
