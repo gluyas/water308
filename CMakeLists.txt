@@ -46,6 +46,12 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/ext/glew-1.10.0")
 add_subdirectory("${PROJECT_SOURCE_DIR}/ext/stb")
 
 #########################################################
+# Include Armadillo Subproject
+#########################################################
+add_subdirectory("${PROJECT_SOURCE_DIR}/ext/armadillo-7.950.1")
+
+
+#########################################################
 # Set Compiler Flags
 #########################################################
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")

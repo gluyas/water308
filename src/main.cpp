@@ -24,7 +24,7 @@
 #include "simple_shader.hpp"
 #include "opengl.hpp"
 #include "geometry.hpp"
-#include "water.h"
+#include "water.hpp"
 
 using namespace std;
 using namespace cgra;
@@ -547,12 +547,7 @@ int main(int argc, char **argv) {
 }
 
 void initWater() {
-    vec3 points[4];
-    points[0] = vec3(15, 3, 15);
-    points[1] = vec3(-15, 3, 15);
-    points[2] = vec3(-15, 3, -15);
-    points[3] = vec3(15, 3, -15);
-    g_water = new Water(points, 4, GL_TRIANGLE_FAN);
+    g_water = new Water(vec2(-50, -50), vec2(50, 50), 2.5);
 }
 
 

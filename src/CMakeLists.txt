@@ -18,10 +18,11 @@ SET(headers
 SET(sources
 		"main.cpp"
 		"geometry.cpp"
-		water.cpp water.h)
+		water.cpp water.hpp)
 
 # Add executable target and link libraries
 # You do not need to touch this
 add_executable(${CGRA_PROJECT} ${headers} ${sources})
 target_link_libraries(${CGRA_PROJECT} PRIVATE glew glfw ${GLFW_LIBRARIES})
 target_link_libraries(${CGRA_PROJECT} PRIVATE stb)
+target_link_libraries(${CGRA_PROJECT} PRIVATE armadillo)
